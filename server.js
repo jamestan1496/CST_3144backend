@@ -77,6 +77,7 @@ app.get('/collection/:collectionName', async (req, res, next) => {
     }
 );
 
+
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
         const result = await req.collection.insertOne(req.body);
@@ -87,18 +88,30 @@ app.post('/collection/:collectionName', async (req, res, next) => {
     }
 );
 
-app.put('/collection/:collectionName/:id', async (req, res, next) => {
+app.put('/collection/Products/:id', async (req, res, next) => {
     try {
+        // Extract the updated availability value from the request body
+        const { Availability } = req.body;
+
+        // Ensure Availability exists
+        if (typeof Availability !== 'number') {
+            return res.status(400).json({ msg: 'Availability is required and must be a number.' });
+        }
+
+        // Update only the availability field for the specific product
         const result = await req.collection.updateOne(
             { _id: new ObjectId(req.params.id) }, 
-            { $set: req.body }
+            { $set: { Availability: Availability } }  // Only updating Availability
         );
+
+        // Check if the update was successful
         res.json(result.modifiedCount === 1 ? { msg: 'success' } : { msg: 'error' });
     } catch (err) {
         next(err);
-        }
     }
-);
+});
+
+
 
 
 app.get('/collection/:collectionName/:id', async (req, res, next) => {
