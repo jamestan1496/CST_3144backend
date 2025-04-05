@@ -68,10 +68,6 @@ app.use('/images', express.static(path.join(__dirname,  'images')));
 app.get('/images/tabletennis.jpg', (req, res) => {
     logActivity("Request for image received");
 });
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
-
 
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
@@ -115,4 +111,32 @@ app.get('/collection/:collectionName/:_id', async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+});
+
+// Search endpoint
+app.get('/collection/:collectionName/search', async (req, res, next) => {
+    const query = req.query.q;
+
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter "q" is required.' });
+    }
+
+    try {
+        // Perform a case-insensitive search on string fields (e.g., name, description)
+        const results = await req.collection.find({
+            $or: [
+                { title: { $regex: query, $options: 'i' } }, // searching by title
+                { location: { $regex: query, $options: 'i' } }, // searching by location
+                { description: { $regex: query, $options: 'i' } } // searching by description (if it exists)
+            ]
+        }).toArray();
+
+        res.json(results);
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
