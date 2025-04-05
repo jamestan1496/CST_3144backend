@@ -113,29 +113,36 @@ app.get('/collection/:collectionName/:_id', async (req, res, next) => {
     }
 });
 
-// Search endpoint
 app.get('/collection/:collectionName/search', async (req, res, next) => {
-    const query = req.query.q;
+    const query = req.query.q;  // Extract the query parameter
 
     if (!query) {
         return res.status(400).json({ error: 'Query parameter "q" is required.' });
     }
 
     try {
-        // Perform a case-insensitive search on string fields (e.g., name, description)
-        const results = await req.collection.find({
+        const collection = req.collection;  // Use the collection set by the param middleware
+
+        console.log('Search query:', query);  // Debug the query
+
+        // Ensure you're searching for the correct fields (title and description)
+        const results = await collection.find({
             $or: [
-                { title: { $regex: query, $options: 'i' } }, // searching by title
-                { location: { $regex: query, $options: 'i' } }, // searching by location
-                { description: { $regex: query, $options: 'i' } } // searching by description (if it exists)
+                { title: { $regex: query, $options: 'i' } },   // Search in title field
+                { description: { $regex: query, $options: 'i' } }  // Search in description field
             ]
         }).toArray();
 
-        res.json(results);
+        console.log('Search results:', results);  // Debug the results
+
+        res.json(results);  // Send the results back as JSON
     } catch (err) {
-        next(err);
+        console.error('Search error:', err);
+        next(err);  // Pass the error to the next error handler
     }
 });
+
+
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
