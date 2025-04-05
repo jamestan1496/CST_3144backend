@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
+const path = require('path');
 
 app.use(express.json());
 
@@ -66,6 +67,9 @@ app.use('/images', express.static(path.join(__dirname,  'images')));
 
 app.get('/images/tabletennis.jpg', (req, res) => {
     logActivity("Request for image received");
+});
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
 
 
