@@ -123,21 +123,25 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
     try {
         const collection = req.collection;  // Use the collection set by the param middleware
 
-        console.log('Search query:', query);  // Debug the query
+        console.log('Search query received:', query);  // Debug the query received by backend
 
-        // Ensure you're searching for the correct fields (title and description)
+        // Ensure you're searching in title and description fields
         const results = await collection.find({
             $or: [
-                { title: { $regex: query, $options: 'i' } },   // Search in title field
-                { description: { $regex: query, $options: 'i' } }  // Search in description field
+                { title: { $regex: query, $options: 'i' } },   // Case-insensitive search in title
+                { description: { $regex: query, $options: 'i' } }  // Case-insensitive search in description
             ]
         }).toArray();
 
-        console.log('Search results:', results);  // Debug the results
+        console.log('Search results:', results);  // Debug the results from MongoDB
+
+        if (results.length === 0) {
+            console.log('No results found for query:', query);  // Debug if no results found
+        }
 
         res.json(results);  // Send the results back as JSON
     } catch (err) {
-        console.error('Search error:', err);
+        console.error('Search error:', err);  // Log the error if any
         next(err);  // Pass the error to the next error handler
     }
 });
