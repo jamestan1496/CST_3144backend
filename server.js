@@ -72,13 +72,10 @@ app.get('/images/tabletennis.jpg', (req, res) => {
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
         const result = await req.collection.insertOne(req.body);
-        res.status(200).json({
-            message: 'Success',
-            insertedId: result.insertedId
-        });
+        res.send('Success');
+        res.json(result.ops);
     } catch (err) {
-        console.error('Insert error:', err);
-        res.status(500).json({ error: 'Failed to insert data' });
+        next(err);
     }
 });
 
