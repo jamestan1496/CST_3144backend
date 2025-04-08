@@ -63,7 +63,7 @@ app.get('/collection/:collectionName', async (req, res, next) => {
     }
 });
 
-app.use('/images', express.static(path.join(__dirname,  'images')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.get('/images/tabletennis.jpg', (req, res) => {
     console.log("Request for image received");
@@ -72,19 +72,18 @@ app.get('/images/tabletennis.jpg', (req, res) => {
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
         const result = await req.collection.insertOne(req.body);
-        res.send('Success');
         res.json(result.ops);
     } catch (err) {
         next(err);
     }
 });
 
-// PUT endpoint updated to use Spaces instead of Availability
+// ✅ Specialized PUT for updating Spaces in Products
 app.put('/collection/Products/:_id', async (req, res, next) => {
     try {
         const { Spaces } = req.body;
 
-        console.log('Updating product_id:', req.params._id);
+        console.log('Updating product _id:', req.params._id);
         console.log('New Spaces:', Spaces);
 
         if (typeof Spaces !== 'number') {
@@ -105,6 +104,21 @@ app.put('/collection/Products/:_id', async (req, res, next) => {
     }
 });
 
+// ✅ Generic PUT for any collection and any fields
+app.put('/collection/:collectionName/:_id', async (req, res, next) => {
+    try {
+        const result = await req.collection.updateOne(
+            { _id: new ObjectId(req.params._id) },
+            { $set: req.body },
+            { upsert: false }
+        );
+
+        res.json(result.modifiedCount === 1 ? { msg: 'success' } : { msg: 'error' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.get('/collection/:collectionName/:_id', async (req, res, next) => {
     try {
         const result = await req.collection.findOne({ _id: new ObjectId(req.params._id) });
@@ -115,40 +129,33 @@ app.get('/collection/:collectionName/:_id', async (req, res, next) => {
 });
 
 app.get('/collection/:collectionName/search', async (req, res, next) => {
-    const query = req.query.q;  // Extract the query parameter
+    const query = req.query.q;
 
     if (!query) {
         return res.status(400).json({ error: 'Query parameter "q" is required.' });
     }
 
     try {
-        const collection = req.collection;  // Use the collection set by the param middleware
+        const collection = req.collection;
 
-        console.log('Search query received:', query);  // Debug the query received by backend
+        console.log('Search query received:', query);
 
-        // Ensure you're searching in title and description fields
         const results = await collection.find({
             $or: [
-                { title: { $regex: query, $options: 'i' } },   // Case-insensitive search in title
-                { description: { $regex: query, $options: 'i' } }  // Case-insensitive search in description
+                { title: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } }
             ]
         }).toArray();
 
-        console.log('Search results:', results);  // Debug the results from MongoDB
+        console.log('Search results:', results);
 
         if (results.length === 0) {
-            console.log('No results found for query:', query);  // Debug if no results found
+            console.log('No results found for query:', query);
         }
 
-        res.json(results);  // Send the results back as JSON
+        res.json(results);
     } catch (err) {
-        console.error('Search error:', err);  // Log the error if any
-        next(err);  // Pass the error to the next error handler
+        console.error('Search error:', err);
+        next(err);
     }
-});
-
-
-
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
 });
