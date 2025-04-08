@@ -66,12 +66,13 @@ app.get('/collection/:collectionName', async (req, res, next) => {
 app.use('/images', express.static(path.join(__dirname,  'images')));
 
 app.get('/images/tabletennis.jpg', (req, res) => {
-    logActivity("Request for image received");
+    console.log("Request for image received");
 });
 
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
         const result = await req.collection.insertOne(req.body);
+        res.send('Success');
         res.json(result.ops);
     } catch (err) {
         next(err);
