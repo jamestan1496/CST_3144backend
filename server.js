@@ -108,7 +108,7 @@ let db;
             }
         });
 
-    app.put('/collection/Products/:_id', async (req, res, next) => {
+    app.put('/collection/Lessons/:_id', async (req, res, next) => {
         try {
             const { _id } = req.params;
             const { Spaces } = req.body;
@@ -121,7 +121,7 @@ let db;
             return res.status(400).json({ msg: 'Spaces must be a number.' });
             }
 
-            const collection = db.collection('Products');
+            const collection = db.collection('Lessons');
             const result = await collection.updateOne(
             { _id: new ObjectId(_id) },
             { $set: { Spaces } }
@@ -161,7 +161,7 @@ let db;
             } catch (err) {
             next(err);
             }
-        });
+    });
 
 
  
