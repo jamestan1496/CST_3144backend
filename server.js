@@ -141,15 +141,14 @@ app.get('/collection/:collectionName/:_id', async (req, res, next) => {
 
 app.get('/collection/:collectionName/search', async (req, res, next) => {
     const query = req.query.q;
-
     if (!query) {
         return res.status(400).json({ error: 'Query parameter "q" is required.' });
     }
 
+    console.log('Search query:', query);  // Debugging line
+
     try {
         const collection = req.collection;
-
-        console.log('Search query received:', query);
 
         const results = await collection.find({
             $or: [
@@ -158,7 +157,7 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
             ]
         }).toArray();
 
-        console.log('Search results:', results);
+        console.log('Search results:', results);  // Debugging line
 
         if (results.length === 0) {
             console.log('No results found for query:', query);
@@ -170,3 +169,4 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
         next(err);
     }
 });
+
