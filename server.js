@@ -145,8 +145,6 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
         return res.status(400).json({ error: 'Query parameter "q" is required.' });
     }
 
-    console.log('Search query:', query);  // Debugging line
-
     try {
         const collection = req.collection;
 
@@ -156,12 +154,6 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
                 { description: { $regex: query, $options: 'i' } }
             ]
         }).toArray();
-
-        console.log('Search results:', results);  // Debugging line
-
-        if (results.length === 0) {
-            console.log('No results found for query:', query);
-        }
 
         res.json(results);
     } catch (err) {
