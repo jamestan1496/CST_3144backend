@@ -50,6 +50,33 @@ app.param('collectionName', (req, res, next, collectionName) => {
     next();
 });
 
+app.get('/collection/:collectionName/search', async (req, res, next) => {
+    const query = req.query.q;
+    const collection = req.collection;
+
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter "q" is required.' });
+    }
+
+    try {
+        console.log("Search query received:", query);
+        console.log("Collection name:", req.params.collectionName);
+
+        const results = await collection.find({
+            $or: [
+                { title: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } }
+            ]
+        }).toArray();
+
+        res.json(results);
+    } catch (err) {
+        console.error("Search error:", err);
+        res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    }
+});
+
+
 app.get('/', (req, res) => {
     res.send('Select a collection, e.g., /collection/messages');
 });
@@ -139,30 +166,6 @@ app.get('/collection/:collectionName/:_id', async (req, res, next) => {
     }
 });
 
-app.get('/collection/:collectionName/search', async (req, res, next) => {
-    const query = req.query.q;
-    if (!query) {
-        return res.status(400).json({ error: 'Query parameter "q" is required.' });
-    }
- 
-    try {
-        const collection = req.collection;
-        const results = await collection.find({
-            $or: [
-                { title: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } }
-            ]
-        }).toArray();
- 
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'No results found for your search.' });
-        }
- 
-        res.json(results);
-    } catch (err) {
-        console.error('Search error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
- });
+
  
 
