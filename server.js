@@ -81,10 +81,12 @@ app.post('/collection/:collectionName', async (req, res, next) => {
 // ✅ Specialized PUT for updating Spaces in Products
 app.put('/collection/Products/:_id', async (req, res, next) => {
     try {
+        const { _id } = req.params;
         const { Spaces } = req.body;
 
-        console.log('Updating product _id:', req.params._id);
-        console.log('New Spaces:', Spaces);
+        if (!ObjectId.isValid(_id)) {
+            return res.status(400).json({ msg: 'Invalid product ID.' });
+        }
 
         if (typeof Spaces !== 'number') {
             return res.status(400).json({ msg: 'Spaces must be a number.' });
@@ -92,12 +94,17 @@ app.put('/collection/Products/:_id', async (req, res, next) => {
 
         const collection = db.collection('Products');
         const result = await collection.updateOne(
-            { _id: new ObjectId(req.params._id) },
-            { $set: { Spaces: Spaces } }
+            { _id: new ObjectId(_id) },
+            { $set: { Spaces } }
         );
 
-        console.log('Update result:', result);
-        res.json(result.modifiedCount === 1 ? { msg: 'success' } : { msg: 'error' });
+        console.log('Matched:', result.matchedCount, '| Modified:', result.modifiedCount);
+
+        if (result.modifiedCount === 1) {
+            res.json({ msg: 'Update successful', updatedId: _id });
+        } else {
+            res.status(404).json({ msg: 'No matching product found or no update made.' });
+        }
     } catch (err) {
         console.error('Update error:', err);
         next(err);
