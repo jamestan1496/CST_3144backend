@@ -84,7 +84,7 @@ app.put('/collection/Products/:_id', async (req, res, next) => {
     try {
         const { Spaces } = req.body;
 
-        console.log('Updating product _id:', req.params._id);
+        console.log('Updating product_id:', req.params._id);
         console.log('New Spaces:', Spaces);
 
         if (typeof Spaces !== 'number') {
