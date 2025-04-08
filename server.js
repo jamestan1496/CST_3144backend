@@ -69,44 +69,24 @@ app.get('/images/tabletennis.jpg', (req, res) => {
     console.log("Request for image received");
 });
 
-app.post('/collection/:collectionName', async (req, res, next) => {
-    try {
-        const result = await req.collection.insertOne(req.body);
-        res.status(200).json({
-            message: 'Success',
-            insertedId: result.insertedId
-        });
-    } catch (err) {
-        console.error('Insert error:', err);
-        res.status(500).json({ error: 'Failed to insert data' });
-    }
-});
+app.post('/collection/:collectionName', (req, res, next) => {
+    req.collection.insert(req.body, (e, results) => {
+    if (e) return next(e)
+    res.send(results.ops)
+    })
+    });
 
 // PUT endpoint updated to use Spaces instead of Availability
-app.put('/collection/Products/:_id', async (req, res, next) => {
-    try {
-        const { Spaces } = req.body;
-
-        console.log('Updating product_id:', req.params._id);
-        console.log('New Spaces:', Spaces);
-
-        if (typeof Spaces !== 'number') {
-            return res.status(400).json({ msg: 'Spaces must be a number.' });
-        }
-
-        const collection = db.collection('Products');
-        const result = await collection.updateOne(
-            { _id: new ObjectId(req.params._id) },
-            { $set: { Spaces: Spaces } }
-        );
-
-        console.log('Update result:', result);
-        res.json(result.modifiedCount === 1 ? { msg: 'success' } : { msg: 'error' });
-    } catch (err) {
-        console.error('Update error:', err);
-        next(err);
-    }
-});
+app.put('/collection/:collectionName/:id', (req, res, next) => {
+    req.collection.update(
+    {_id: new ObjectID(req.params.id)},
+    {$set: req.body},
+    {safe: true, multi: false},
+    (e, result) => {
+    if (e) return next(e)
+    res.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
+    })
+    });
 
 app.get('/collection/:collectionName/:_id', async (req, res, next) => {
     try {
