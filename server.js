@@ -72,11 +72,15 @@ app.get('/images/tabletennis.jpg', (req, res) => {
 app.post('/collection/:collectionName', async (req, res, next) => {
     try {
         const result = await req.collection.insertOne(req.body);
-        res.json(result.ops);
+        res.status(201).json({
+            msg: 'Document inserted successfully',
+            insertedId: result.insertedId
+        });
     } catch (err) {
         next(err);
     }
 });
+
 
 // ✅ Specialized PUT for updating Spaces in Products
 app.put('/collection/Products/:_id', async (req, res, next) => {
