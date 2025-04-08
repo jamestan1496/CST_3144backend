@@ -144,21 +144,25 @@ app.get('/collection/:collectionName/search', async (req, res, next) => {
     if (!query) {
         return res.status(400).json({ error: 'Query parameter "q" is required.' });
     }
-
+ 
     try {
         const collection = req.collection;
-
         const results = await collection.find({
             $or: [
                 { title: { $regex: query, $options: 'i' } },
                 { description: { $regex: query, $options: 'i' } }
             ]
         }).toArray();
-
+ 
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'No results found for your search.' });
+        }
+ 
         res.json(results);
     } catch (err) {
         console.error('Search error:', err);
-        next(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+ });
+ 
 
